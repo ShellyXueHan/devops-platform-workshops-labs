@@ -19,7 +19,27 @@ metadata:
     openshift.io/support-url: https://github.com/bcdevops/
     tags: monitoring,grafana
   name: grafana-template
-objects: 
+objects:
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    generation: 2
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations:
+        openshift.io/imported-from: grafana/grafana:6.2.0
+      from:
+        kind: DockerImage
+        name: grafana/grafana:6.2.0
+      importPolicy: {}
+      name: 6.2.0
+      referencePolicy:
+        type: Source
 - apiVersion: v1
   kind: Service
   metadata:
@@ -72,7 +92,8 @@ objects:
           deploymentconfig: ${GRAFANA_SERVICE_NAME}
       spec:
         containers:
-        - image: grafana/grafana:v6.2.0
+        - image: ${NAMESPACE}/${GRAFANA_SERVICE_NAME}:v6.2.0
+        # - image: docker-registry.default.svc:5000/${NAMESPACE}/${GRAFANA_SERVICE_NAME}:v6.2.0
           # image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
           imagePullPolicy: IfNotPresent
           name: ${GRAFANA_SERVICE_NAME}
@@ -94,6 +115,27 @@ objects:
         schedulerName: default-scheduler
         securityContext: {}
         terminationGracePeriodSeconds: 30
+        env:
+        - name: GF_DATABASE_TYPE
+          value: postgres
+        # the service created
+        - name: GF_DATABASE_HOST
+          value: patroni-master-001
+        - name: GF_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: patroni-001
+              key: app-db-name
+        - name: GF_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: patroni-001
+              key: app-db-username
+        - name: GF_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: patroni-001
+              key: app-db-password
         volumes:
         - configMap:
             defaultMode: 420
@@ -119,30 +161,6 @@ objects:
           name: ${GRAFANA_SERVICE_NAME}:6.2.0
           namespace: ${NAMESPACE}
       type: ImageChange
-- apiVersion: image.openshift.io/v1
-  kind: ImageStream
-  metadata:
-    annotations:
-      openshift.io/generated-by: OpenShiftNewApp
-      openshift.io/image.dockerRepositoryCheck: 2019-05-26T17:34:32Z
-    generation: 2
-    labels:
-      app: ${GRAFANA_SERVICE_NAME}
-    name: ${GRAFANA_SERVICE_NAME}
-  spec:
-    lookupPolicy:
-      local: false
-    tags:
-    - annotations:
-        openshift.io/imported-from: grafana/grafana:6.2.0
-      from:
-        kind: DockerImage
-        name: grafana/grafana:6.2.0
-      generation: 2
-      importPolicy: {}
-      name: 6.2.0
-      referencePolicy:
-        type: Source
 - apiVersion: route.openshift.io/v1
   kind: Route
   metadata:
@@ -152,7 +170,7 @@ objects:
       app: ${GRAFANA_SERVICE_NAME}
     name: ${GRAFANA_SERVICE_NAME}
   spec:
-    host: ${GRAFANA_SERVICE_NAME}.${ROUTE_SUBDOMAIN}
+    host: ${GRAFANA_SERVICE_NAME}-${ROUTE_ENV}.${ROUTE_SUBDOMAIN}
     port:
       targetPort: 3000-tcp
     to:
@@ -364,4 +382,8 @@ parameters:
   name: ROUTE_SUBDOMAIN
   required: true
   value: pathfinder.gov.bc.ca
-  
+- description: variable to the route
+  displayName: Route env
+  name: ROUTE_ENV
+  required: true
+  value: dev
