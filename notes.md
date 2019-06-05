@@ -25,7 +25,7 @@ oc delete all,configmap -l app=shellyxuehan-loki
 oc get all,configmap -l app=shellyxuehan-prometheus
 oc delete all,configmap -l app=shellyxuehan-prometheus
 
-<!-- create templates -->
+<!-- create oc templates -->
 oc apply -f xxx.yaml
 
 <!-- use the template -->
@@ -56,10 +56,8 @@ oc delete all,configmaps,templates,pvc,secrets -l app=shellyxuehan-loki
 oc delete all,configmaps,templates,pvc,secrets -l app=shellyxuehan-prometheus
 
 -----------------setup jenkins--------------------
-
+Start the build:
 oc new-build https://github.com/ShellyXueHan/devops-platform-workshops-labs#ShellyXueHan-201 --context-dir=openshift201
-
-
 
 
 --------------patroni-------------
@@ -77,9 +75,12 @@ oc process -f openshift/deployment.yaml \
 2. add image puller role to it from tools:
     oc policy add-role-to-user system:image-puller system:serviceaccount:s4g19x-shellyxuehan-openshift201-may2019-dev:patroni -n s4g19x-shellyxuehan-openshift201-may2019-tools
 
-<!-- ..... -->
-oc process -f openshift/backup-build.json | oc apply -f -
 
+--------------DB backup-------------
+<!-- running the templates -->
+1. build the image
+oc process -f openshift/backup-build.json | oc apply -f -
+2. deploy with two volumes attached, for backing up and restoring db
 oc process -f openshift/simple-deploy.json | oc apply -f -
 
 <!-- to trigger build -->
