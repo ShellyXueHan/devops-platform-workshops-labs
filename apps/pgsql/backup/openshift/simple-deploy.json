@@ -122,13 +122,13 @@
                   },
                   {
                     "name": "DATABASE_SERVICE_NAME",
-                    "value": "${DATABASE_DEPLOYMENT_NAME}-master"
+                    "value": "${DATABASE_DEPLOYMENT_NAME}-master${DATABASE_DEPLOYMENT_PREFIX}"
                   },
                   {
                     "name": "POSTGRESQL_DATABASE",
                     "valueFrom": {
                       "secretKeyRef": {
-                        "name": "${DATABASE_DEPLOYMENT_NAME}",
+                        "name": "${DATABASE_DEPLOYMENT_NAME}${DATABASE_DEPLOYMENT_PREFIX}",
                         "key": "app-db-name"
                       }
                     }
@@ -137,7 +137,7 @@
                     "name": "POSTGRESQL_USER",
                     "valueFrom": {
                       "secretKeyRef": {
-                        "name": "${DATABASE_DEPLOYMENT_NAME}",
+                        "name": "${DATABASE_DEPLOYMENT_NAME}${DATABASE_DEPLOYMENT_PREFIX}",
                         "key": "app-db-username"
                       }
                     }
@@ -146,7 +146,7 @@
                     "name": "POSTGRESQL_PASSWORD",
                     "valueFrom": {
                       "secretKeyRef": {
-                        "name": "${DATABASE_DEPLOYMENT_NAME}",
+                        "name": "${DATABASE_DEPLOYMENT_NAME}${DATABASE_DEPLOYMENT_PREFIX}",
                         "key": "app-db-password"
                       }
                     }
@@ -203,7 +203,7 @@
       "displayName": "Image Namespace",
       "description": "The namespace of the OpenShift project containing the imagestream for the application.",
       "required": true,
-      "value": "backup-container"
+      "value": "s4g19x-shellyxuehan-openshift201-may2019-tools"
     },
     {
       "name": "TAG_NAME",
@@ -225,6 +225,13 @@
       "description": "The name associated to the database deployment resources.  In particular, this is used to wire up the credentials associated to the database.",
       "required": true,
       "value": "patroni"
+    },
+    {
+      "name": "DATABASE_DEPLOYMENT_PREFIX",
+      "displayName": "Database Deployment prefix",
+      "description": "The name associated to the database deployment resources.  In particular, this is used to wire up the credentials associated to the database.",
+      "required": true,
+      "value": "-001"
     },
     {
       "name": "BACKUP_DIR",
