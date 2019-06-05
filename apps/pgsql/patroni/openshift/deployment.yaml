@@ -211,8 +211,8 @@ objects:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           readinessProbe:
-            initialDelaySeconds: 5
-            timeoutSeconds: 5
+            initialDelaySeconds: 30
+            timeoutSeconds: 20
             failureThreshold: 4
             exec:
               command:
